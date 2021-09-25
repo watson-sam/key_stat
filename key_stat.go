@@ -1,4 +1,4 @@
-// Package key_stats implements calculates "streak" length over a given number of float64 values.
+// Package key_stats implements calculates "key stats" over a number of float64 values within a given window
 package key_stat
 
 import (
@@ -6,15 +6,7 @@ import (
 	"math"
 )
 
-const (
-	// By default nan values are ignored (if false nan values are treated as 0)
-	ignoreNanValuesDefault bool = true
-	// By default infinite values (both positive and negative) are ignored
-	// (if false positive inf values are treated as 1, negative inf values as 0)
-	ignoreInfValuesDefault bool = true
-)
-
-// StreakObject - the struct that holds the 'settings' and current streak length.
+// KeyStatsObject - the struct that holds the 'settings' and current values.
 type KeyStatsObject struct {
 	values    []int8
 	minWindow int8
@@ -38,7 +30,7 @@ func (kso *KeyStatsObject) SetIgnoreInfValues(ignoreInfValues bool) {
 }
 
 // Add - if given value meets the given conditions, append to the values used in the calculation,
-// adjusting this so it it relevant for the supplied window
+// adjusting this so it it relevant for the supplied windows
 func (kso *KeyStatsObject) Add(value float64) {
 	if kso.ignoreNanValues && math.IsNaN(value) {
 		return
@@ -56,29 +48,6 @@ func (kso *KeyStatsObject) Add(value float64) {
 		kso.values = append(kso.values, 0)
 	} else {
 		panic("Supplied `value` argument is not valid - must be -inf, 0, 1, inf or nan, received value: " + fmt.Sprintf("%f", value))
-	}
-
-}
-
-// Streak - return current streak length
-func (kso *KeyStatsObject) Streak() float64 {
-	var value float64
-	for _, v := range kso.values {
-		if v == 0 {
-			value = 0
-		} else {
-			value++
-		}
-	}
-	return value
-}
-
-// NewStreakObject - set up a new rolling object with a supplied window with the default settings
-func NewStreakObject() *KeyStatsObject {
-	return &KeyStatsObject{
-		maxWindow:       127,
-		ignoreNanValues: ignoreNanValuesDefault,
-		ignoreInfValues: ignoreInfValuesDefault,
 	}
 }
 
